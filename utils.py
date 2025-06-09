@@ -117,43 +117,32 @@ def get_dataloader(datasets_name):
 
 
 #将tensor->numpy
-def get_numpy_data(dataloader: DataLoader, dataset_type: str = None) -> Tuple[np.ndarray, np.ndarray]:
-    # 灰度图数据集列表（需要去掉通道维度）
-    GRAYSCALE_DATASETS = ['mnist', 'fashion', 'kmnist']
+def get_numpy_data(dataloader, flatten=False):
+    """将PyTorch DataLoader转换为numpy数组
+    支持单通道(1×H×W)和三通道(3×H×W)输入
+    可选择是否展平（Flatten）图像数据
 
+    Args:
+        dataloader: PyTorch DataLoader
+        flatten: 是否展平图像数据（默认False）
+
+    Returns:
+        X: numpy数组 (N, C, H, W) 或 (N, C*H*W)（如果flatten=True）
+        y: numpy数组 (N,)
+    """
     X_list, y_list = [], []
+    for images, labels in dataloader:
+        X_list.append(images.numpy())
+        y_list.append(labels.numpy())
 
-    for batch in dataloader:
-        if len(batch) == 2:
-            images, labels = batch
-        else:
-            raise ValueError("DataLoader应返回(image, label)元组")
+    X = np.concatenate(X_list, axis=0)  # shape: (N, C, H, W)
+    y = np.concatenate(y_list, axis=0)  # shape: (N,)
 
-        # 转换为numpy并检查维度
-        images_np = images.numpy()
-        labels_np = labels.numpy()
-
-        if images_np.ndim not in [3, 4]:
-            raise ValueError(f"输入图像应为3D或4D张量，实际得到 {images_np.ndim}D")
-
-        X_list.append(images_np)
-        y_list.append(labels_np)
-
-    # 合并所有batch
-    X = np.concatenate(X_list, axis=0)  # shape: (N, C, H, W) 或 (N, H, W)
-    y = np.concatenate(y_list, axis=0)
-
-    # 自动维度处理
-    if dataset_type and dataset_type.lower() in GRAYSCALE_DATASETS:
-        # 灰度图处理：(N, 1, H, W) -> (N, H, W)
-        if X.ndim == 4 and X.shape[1] == 1:
-            X = X.squeeze(axis=1)
-    elif X.ndim == 4:
-        # RGB图处理：(N, C, H, W) -> (N, H, W, C) 更符合常规numpy格式
-        X = np.transpose(X, (0, 2, 3, 1))
+    if flatten:
+        # 展平操作：(N, C, H, W) -> (N, C*H*W)
+        X = X.reshape(X.shape[0], -1)  # -1 自动计算 C*H*W
 
     return X, y
-
 
 def evaluate_classifier(y_true, y_pred):
     """

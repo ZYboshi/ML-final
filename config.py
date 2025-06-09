@@ -8,8 +8,11 @@ Epochs=20
 LEARNING_RATES = [0.1, 0.01, 0.001]
 
 
-#决策树参数
-max_depth = 10
+#随机森林参数
+n_estimators = 100
+max_depth = None
+max_features = 'sqrt'
+random_state = 42
 #全连接网络参数
 Epochs_FCN = 10
 #模型选择参数

@@ -6,14 +6,17 @@ import time
 import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
+from typing import Tuple, Optional
+from torch.utils.data import DataLoader
 import numpy as np
 # 参数
 from config import *
-from network import Net
 from utils import *
 # 模型
-
-
+from network import Net
+from randomForest import RandomForest
+#预测
+from sklearn.metrics import accuracy_score
 """
 全局参数:train_loader \ Epochs
 
@@ -64,7 +67,30 @@ def train_net_model(dataset_name = "CIFAR100" , input_size = 784 ,dataset_classe
     print("\n******** 卷积神经网络 ********")
     evaluate_classifier(y_true, y_pred)
 
-# 显示样本图像（兼容灰度和彩色）
+#随机森林
+def train_randomForest(dataset_name = "MNIST",
+                       train_loader: Optional[DataLoader] = None,
+                        test_loader: Optional[DataLoader] = None,):
+    #数据处理:获得numpy数据+输入节点+类型数量
+    print(f'>>>>>>随机森林***{dataset_name}<<<<<<')
+    image, labels = next(iter(train_loader))
+    input_size = image.shape[1] * image.shape[2] * image.shape[3]
+    dataset_classes = train_loader.dataset.classes
+    X_train, y_train = get_numpy_data(train_loader, flatten=True)
+    X_test, y_test = get_numpy_data(test_loader, flatten=True)
+    #模型建立
+    rf = RandomForest(n_estimators = n_estimators,
+                        max_depth = max_depth,
+                        max_features = max_features,
+                        random_state = random_state,)
+    rf.train(X_train, y_train)
+    # 预测测试集
+    y_pred = rf.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Test Accuracy: {accuracy:.4f}")
+
+
+#显示样本图像（兼容灰度和彩色）
 def show_sample_image(data_loader, title):
     # 获取一个批次的数据
     images, labels = next(iter(data_loader))
@@ -89,21 +115,38 @@ def show_sample_image(data_loader, title):
     plt.title(f"{title}\nLabel: {data_classes[labels[0].item()]}")
     plt.axis('off')
     plt.show()
+#测试是否正确
+def try_data(dataset_name = "MNIST",
+        train_loader: Optional[DataLoader] = None,
+        test_loader: Optional[DataLoader] = None,):
+    print(f'{dataset_name}')
+    image, labels = next(iter(train_loader))
+    # 输入节点数量
+    input_size = image.shape[1] * image.shape[2] * image.shape[3]
+    dataset_classes = train_loader.dataset.classes
+    dataset_name = data_name
+    print(f'输入节点：{input_size}  种类数:{dataset_classes}')
+    #数据转换为numpy
+    X_train , y_train = get_numpy_data(train_loader,flatten=True)
+    print(X_train.shape)
+    print(y_train.shape)
 
 if __name__ == "__main__":
     for data_name in datasets_list :
         train_loader, test_loader,data_classes = get_dataloader(data_name)
-        # 显示样本图像
-        #show_sample_image(train_loader, f'Sample from {data_name}')
-        image ,labels = next(iter(train_loader))
-        #测试转换为Numpy
+        train_randomForest(dataset_name = data_name,train_loader = train_loader,test_loader = test_loader)
 
-        if(data_name == "MNIST"):
-            print(len(train_loader.dataset.classes))
-            #输入节点数量
-            input_size = image.shape[1]*image.shape[2]*image.shape[3]
-            dataset_classes = train_loader.dataset.classes
-            dataset_name = data_name
+        # # 显示样本图像
+        # #show_sample_image(train_loader, f'Sample from {data_name}')
+        # image ,labels = next(iter(train_loader))
+        # #测试转换为Numpy
+        #
+        # if(data_name == "MNIST"):
+        #     print(len(train_loader.dataset.classes))
+        #     #输入节点数量
+        #     input_size = image.shape[1]*image.shape[2]*image.shape[3]
+        #     dataset_classes = train_loader.dataset.classes
+        #     dataset_name = data_name
 
 
 

@@ -16,4 +16,4 @@ Epochs_FCN = 10
 Model_Type = "both"  # "pytorch", "decision_tree", "LogisticRegression" ， "Bayesian"或 "both"
 #数据集选择参数
 datasets_list = ["MNIST","FashionMNIST","KMNIST","CIFAR100","Flowers102","Food-101"]
-datasets_name = "FashionMNIST" #'MNIST',"FashionMNIST","KMNIST" "CIFAR100"  "Flowers102"  "Food-101"
+datasets_name = "CIFAR100" #'MNIST',"FashionMNIST","KMNIST" "CIFAR100"  "Flowers102"  "Food-101"

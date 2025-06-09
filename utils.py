@@ -153,3 +153,19 @@ def get_numpy_data(dataloader: DataLoader, dataset_type: str = None) -> Tuple[np
         X = np.transpose(X, (0, 2, 3, 1))
 
     return X, y
+
+
+def evaluate_classifier(y_true, y_pred):
+    """
+    通用分类器评估函数（同时输出macro和micro指标）
+    参数:
+        y_true: 真实标签（形状 [n_samples]）
+        y_pred: 预测标签（形状 [n_samples]）
+    """
+    # 基础指标（accuracy与average无关）
+    accuracy = accuracy_score(y_true, y_pred)
+    # 打印报告
+    print("\n========== 分类器评估报告 ==========")
+    print(f"准确率(Accuracy): {accuracy:.4f}")
+
+    return accuracy,

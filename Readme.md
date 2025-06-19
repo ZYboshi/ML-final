@@ -53,4 +53,4 @@ main函数中  每个数据集以及算法在训练后会有如下代码
 ![Alt Text](./algorithm_comparison.png)
 
 ## 项目地址
-GitHub仓库：https://github.com/ZYboshi/img-classify.git
+GitHub仓库：https://github.com/ZYboshi/ML-final.git

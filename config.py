@@ -3,7 +3,7 @@ import torch
 Device="cuda" if torch.cuda.is_available() else "cpu"
 
 #pytorch参数
-BatchSize=1
+BatchSize=128
 Epochs=20
 LEARNING_RATES = [0.1, 0.01, 0.001]
 

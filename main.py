@@ -33,7 +33,10 @@ def train_net_model(dataset_name = "CIFAR100" , train_loader: Optional[DataLoade
     else:
         input_size = image.shape[1] * image.shape[2] * image.shape[3]
     dataset_classes = train_loader.dataset.classes
+
     train_losses = []
+    epochs_list = []  # 记录epoch编号
+
     """训练PyTorch神经网络模型"""
     start_time = time.time()
     model = Net(input_size = input_size,
@@ -41,7 +44,7 @@ def train_net_model(dataset_name = "CIFAR100" , train_loader: Optional[DataLoade
 
     #决策:交叉熵
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(),lr = 0.001)
+    optimizer = optim.Adam(model.parameters(),lr = 0.01)
 
     #训练
     train_start = time.time()
@@ -56,10 +59,12 @@ def train_net_model(dataset_name = "CIFAR100" , train_loader: Optional[DataLoade
             optimizer.step()
         print(f"\nEpoch[{epoch}/{Epochs}]\tLoss: {loss.item():.6f}\n")
         train_losses.append(loss.item())
+        epochs_list.append(epoch)
         print(loss.item())
     train_end = time.time()
     train_duration = train_end - train_start
 
+    plot_loss_curve(epochs_list, train_losses,dataset_name)
 
     #测试
     test_start = time.time()
@@ -176,8 +181,8 @@ def try_data(dataset_name = "MNIST",
 if __name__ == "__main__":
     for data_name in datasets_list :
         train_loader, test_loader,data_classes = get_dataloader(data_name)
-        #train_randomForest(dataset_name = data_name,train_loader = train_loader,test_loader = test_loader)
-        #train_logisticRegression(dataset_name = data_name,train_loader = train_loader,test_loader = test_loader)
+        train_randomForest(dataset_name = data_name,train_loader = train_loader,test_loader = test_loader)
+        train_logisticRegression(dataset_name = data_name,train_loader = train_loader,test_loader = test_loader)
         train_net_model(data_name,train_loader,test_loader)
         # # 显示样本图像
         # if data_name != "Iris":

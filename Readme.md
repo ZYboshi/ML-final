@@ -1,54 +1,56 @@
-# 机器学习实验课程设计
+# 机器学习课程设计----分类算法对比学习研究
 > 西南交通大学  2022116481  张彦博
 >
->MNIST手写数字识别数据集在不同模型上的比较
+>分类算法对比学习研究
 
-本项目实现了多种机器学习模型在MNIST手写数字识别任务上的训练和预测，包括：
-
-* `卷积神经网络 (CNN)`
-* `全连接神经网络 (FCN)`
-* `决策树`
-* `逻辑回归`
-* `贝叶斯分类器`
-
-## 模型训练准备
-1. 数据准备
-项目使用MNIST数据集，包含
-* 60,000张训练图像
-* 10,000张测试图像
-数据加载和预处理通过`utils.py`中的`get_dataloader`函数完成。
-
-2. 训练配置
-训练参数在`config.py`中配置，其中模型选择参数`Model_Type`选择为both的时候即为所有模型都执行：  
-```python  
-# 公共参数
-# 决策树参数
-# 全连接网络参数
-
-# 模型选择
-Model_Type = "both"  # 可选："pytorch", "decision_tree", "LogisticRegression", "Bayesian", "FCN" 或 "both"
+本项目旨在通过系统的实验对比分析，评估逻辑回归、全连接神经网络和随机森林三种代表性分类算法在多个标准数据集上的性能，探究不同算法在不同数据特性和复杂度下的表现差异，为不同应用场景下的算法选择提供参考依据。
+```
+.
+├── config.py              # 全局参数配置
+├── logisticregress.py     # 逻辑回归模型实现
+├── main.py                # 主程序  包含了训练以及测试文件
+├── network.py             # 全连接神经网络模型实现
+├── randomForest.py        # 随机森林模型实现
+├── utils.py               # 工具函数  包含画图工具
+├── algorithm_comparison.png  # 算法对比图
+└── 机器学习B课设.docx      # 详细实验报告
 ```
 
-## 模型训练
+
+## 支持的数据集
+本项目支持以下数据集的分类任务：
+* Iris：经典的小型分类数据集，包含 3 类鸢尾花，每类 50 个样本，每个样本有 4 个数值特征
+* FashionMNIST：结构与 MNIST 一致，包含 10 种服装物品的图像
+* KMNIST：替代 MNIST 的日本古典字符数据集，包含 10 类平假名字符
+* CIFAR-10：包含 10 类常见物体的图像数据集
+* CIFAR-100：CIFAR-10 的扩展版，包含 100 个精细类别的图像
+* STL-10：专为无监督学习和半监督学习设计的图像数据集，包含 10 类常见物体
+
+
+## 模型训练+预测
 >模型训练以及预测都写在同一个函数中，通过调用`main.py`中train_xxx函数即可进行模型训练以及预测
 
-1. 运行`main.py`进行训练+预测
+1. 运行`main.py`进行训练
 
-| 模型 | 实现文件 | 训练函数 | 备注 |
-|------|----------|----------|------|
-| ​**卷积神经网络(CNN)​**​ | `network.py` | `train_pytorch_model(lr=0.01, optimizer_type='adam')` | 支持多种优化器 |
-| ​**全连接神经网络(FCN)​**​ | `FCNnet.py` | `train_fully_connected()` | 单层全连接网络 |
-| ​**决策树**​ | `decisiontree.py` | `train_decision_tree()` | 基于scikit-learn实现 |
-| ​**逻辑回归**​ | `logisticregress.py` | `train_LogisticRegression()` | 多分类逻辑回归 |
-| ​**贝叶斯分类器**​ | `bayesian.py` | `train_BayesianClassifier()` | 高斯朴素贝叶斯 |
+| 模型               | 实现文件            | 备注                                                                                                                                                                                                 |
+|--------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 逻辑回归           | `logisticregress.py` | - ​**模型类型**: 广义线性模型<br>- ​**映射函数**: Sigmoid函数（概率空间）<br>- ​**优化器**: L-BFGS<br>- ​**正则化**: L2正则化<br>- ​**多分类实现**: 直接优化多类别交叉熵损失（Softmax归一化）             |
+| 全连接神经网络     | `network.py`         | - ​**结构**: 三层（输入层→隐藏层（3个神经元）→输出层）<br>- ​**输入/输出层**: 动态适配特征数/类别数<br>- ​**优化器**: Adam<br>- ​**损失函数**: 多分类交叉熵<br>- ​**输出层激活**: Softmax（支持多分类）   |
+| 随机森林           | `randomForest.py`    | - ​**基学习器**: 决策树<br>- ​**训练策略**: 随机子样本 + 随机子特征<br>- ​**参数**: 100棵树，最大深度无限制，特征数策略=`sqrt`<br>- ​**集成方法**: Bagging<br>- ​**随机种子**: 42<br>- ​**投票机制**: 多数投票 |
 
-2. 卷积网络模型权重参数
-在`main.py`中 卷积网络训练过程中保存了卷积网络模型权重参数，用于断点续训等操作,保存在文件夹:`checkpoints`  
-代码为:
+2. 预测  
+main函数中  每个数据集以及算法在训练后会有如下代码
 ```python
-        if (epoch+1) % 5 == 0:
-            print(f"Epoch {epoch}: Train Loss = {loss.item():.4f}")
-            torch.save(model.state_dict(), f"./checkpoints/fc_model_{epoch}.pth")
+    # 预测测试集
+    y_pred = rf.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Test Accuracy: {accuracy:.4f}")
 ```  
+用于预测。
+
+
+## 预测结果
+![Alt Text](./algorithm_comparison.png)
+
 ## 项目地址
 GitHub仓库：https://github.com/ZYboshi/img-classify.git
